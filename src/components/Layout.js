@@ -39,18 +39,18 @@ function Layout() {
     { text: "마이페이지", icon: <PersonIcon />, path: "/mypage" },
   ];
 
-   const getCurrentTab = () => {
+  const getCurrentTab = () => {
     const path = location.pathname;
 
     // 1. 그룹 관련 페이지면 무조건 1번(그룹 탭) 리턴
     // 예: /groups, /groups/create, /groups/1, /groups/1/members 등등
-    if (path.startsWith('/groups')) {
-        return 1;
+    if (path.startsWith("/groups")) {
+      return 1;
     }
 
     // 2. 마이페이지 관련이면 2번 리턴
-    if (path.startsWith('/mypage')) {
-        return 2;
+    if (path.startsWith("/mypage")) {
+      return 2;
     }
 
     // 3. 나머지는 기본 0번(캘린더) 리턴
@@ -86,15 +86,21 @@ function Layout() {
           open
         >
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box
+              component="img"
+              src="/favicon.ico" // public 폴더 기준 경로
+              alt="logo"
+              sx={{ width: 24, height: 24, mr: 1.5 }} // 적절한 크기와 오른쪽 여백
+            />
             <Typography
+              component="h1"
               variant="h6"
-              noWrap
-              component="div"
-              sx={{ fontWeight: "bold" }}
+              fontWeight="900"
+              color="primary.main"
+              sx={{ letterSpacing: -0.5 }}
             >
               R&F Calendar
             </Typography>
-            <ThemeToggleButton />
           </Toolbar>
           <List>
             {menuItems.map((item) => (

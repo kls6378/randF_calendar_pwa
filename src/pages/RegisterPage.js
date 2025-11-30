@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Typography, Avatar } from '@mui/material';
-import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
+import { Box, TextField, Button, Typography, Avatar, Link, InputAdornment, IconButton } from '@mui/material';
+import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined'; // 회원가입 아이콘
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline'; // 아이디 아이콘
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'; // 비번 아이콘
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'; // 닉네임 아이콘
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { motion } from 'framer-motion';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -15,12 +21,16 @@ function RegisterPage() {
 
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false);
   
-  // ID 중복 체크 관련 상태
-  const [idMessage, setIdMessage] = useState(''); // 결과 메시지
-  const [isIdAvailable, setIsIdAvailable] = useState(false); // 사용 가능 여부
-  const [isChecking, setIsChecking] = useState(false); // 로딩 상태 (선택사항)
+  // 비밀번호 보이기/숨기기 토글 상태
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // ID 실시간 중복 체크 (Debounce 적용)
+  // ID 중복 체크 관련 상태
+  const [idMessage, setIdMessage] = useState(''); 
+  const [isIdAvailable, setIsIdAvailable] = useState(false); 
+  const [isChecking, setIsChecking] = useState(false); 
+
+  // ID 실시간 중복 체크
   useEffect(() => {
     const checkId = async () => {
       if (!formData.id) {
@@ -29,14 +39,13 @@ function RegisterPage() {
         return;
       }
 
-      // TODO: 실제 백엔드 API 호출로 교체해야 함
-      // 예: const response = await axios.get(`/api/check-id?id=${formData.id}`);
-      
-      setIsChecking(true); // 로딩 시작
+      // TODO: 실제 백엔드 API 호출로 교체
+      // 예: const response = await fetch(`/api/users/check-id?id=${formData.id}`);
+      setIsChecking(true); 
 
-      // (임시) 0.5초 뒤에 가짜 응답 받기
+      // (임시) 0.5초 뒤 가짜 응답
       setTimeout(() => {
-        const mockTakenIds = ['admin', 'test', 'user']; // 이미 있는 아이디들 (가정)
+        const mockTakenIds = ['admin', 'test', 'user'];
         
         if (mockTakenIds.includes(formData.id)) {
           setIdMessage('이미 사용 중인 아이디입니다.');
@@ -45,20 +54,18 @@ function RegisterPage() {
           setIdMessage('사용 가능한 아이디입니다.');
           setIsIdAvailable(true);
         }
-        setIsChecking(false); // 로딩 끝
+        setIsChecking(false);
       }, 500);
     };
 
-    // 0.5초 동안 입력이 없으면 체크 실행 (Debounce)
+    // 디바운스: 0.5초 동안 입력이 없으면 체크 실행
     const timer = setTimeout(checkId, 500);
-    
-    // 0.5초 전에 다시 입력하면 타이머 취소 (이전 요청 취소)
     return () => clearTimeout(timer);
 
   }, [formData.id]);
 
 
-  // 비밀번호 실시간 체크 (기존 코드)
+  // 비밀번호 실시간 체크
   useEffect(() => {
     if (formData.password && formData.confirmPassword) {
       setIsPasswordMismatch(formData.password !== formData.confirmPassword);
@@ -80,7 +87,6 @@ function RegisterPage() {
       return;
     }
 
-    // 안전장치: ID 중복이거나 비번 틀리면 막음
     if (!isIdAvailable) {
       alert("아이디를 확인해주세요.");
       return;
@@ -93,30 +99,52 @@ function RegisterPage() {
     const { confirmPassword, ...submitData } = formData;
     console.log('회원가입 요청 데이터:', submitData);
     
+    // TODO: 백엔드 회원가입 API 호출 (POST /auth/register)
+    
     alert('회원가입이 완료되었습니다! 로그인해주세요.');
     navigate('/login');
   };
 
   return (
     <Box
+      component={motion.div}
+      initial={{ opacity: 0, y: 20 }} // 애니메이션 효과
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         width: '100%',
+        px: 2,
+        pb: 4
       }}
     >
-      <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
-        <PersonAddOutlinedIcon />
-      </Avatar>
-      
-      <Typography component="h1" variant="h5">
-        회원가입
-      </Typography>
+      {/* 1. 상단 브랜딩 (회원가입 느낌) */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4, mt: 4 }}>
+        <Avatar 
+          sx={{ 
+            m: 1, 
+            bgcolor: 'secondary.main', // 회원가입은 보라색 포인트
+            width: 56, 
+            height: 56,
+            boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)' 
+          }}
+        >
+          <PersonAddOutlinedIcon sx={{ fontSize: 28 }} />
+        </Avatar>
+        <Typography component="h1" variant="h5" fontWeight="bold">
+          회원가입
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          R&F Calendar와 함께하세요!
+        </Typography>
+      </Box>
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+      {/* 2. 입력 폼 */}
+      <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
         
-        {/* 아이디 (중복 체크 기능 추가) */}
+        {/* 아이디 */}
         <TextField
           margin="normal"
           required
@@ -127,16 +155,22 @@ function RegisterPage() {
           autoFocus
           value={formData.id}
           onChange={handleChange}
-          // 에러 상태 표시: 입력했는데 사용 불가하거나 로딩중이 아닐 때
           error={formData.id.length > 0 && !isIdAvailable && !isChecking}
-          // 메시지 표시 (초록색/빨간색 구분)
           helperText={
             isChecking ? "확인 중..." : (
-              <span style={{ color: isIdAvailable ? '#2e7d32' : '#d32f2f' }}>
+              <span style={{ color: isIdAvailable ? '#2e7d32' : '#d32f2f', fontWeight: 'bold' }}>
                 {idMessage}
               </span>
             )
           }
+          // 아이콘 추가
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PersonOutlineIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
         />
 
         {/* 비밀번호 */}
@@ -146,10 +180,21 @@ function RegisterPage() {
           fullWidth
           name="password"
           label="비밀번호"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           id="password"
           value={formData.password}
           onChange={handleChange}
+          error={isPasswordMismatch}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><LockOutlinedIcon color="action" /></InputAdornment>,
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
 
         {/* 비밀번호 확인 */}
@@ -159,12 +204,22 @@ function RegisterPage() {
           fullWidth
           name="confirmPassword"
           label="비밀번호 확인"
-          type="password"
+          type={showConfirmPassword ? 'text' : 'password'}
           id="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
           error={isPasswordMismatch}
           helperText={isPasswordMismatch ? "비밀번호가 일치하지 않습니다." : ""}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><LockOutlinedIcon color="action" /></InputAdornment>,
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
 
         {/* 닉네임 */}
@@ -177,26 +232,49 @@ function RegisterPage() {
           name="nickname"
           value={formData.nickname}
           onChange={handleChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <BadgeOutlinedIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
         />
 
+        {/* 가입 버튼 (디자인 통일) */}
         <Button
           type="submit"
           fullWidth
           variant="contained"
-          // 아이디 중복이거나 비번 틀리면 버튼 비활성화
-          disabled={!isIdAvailable || isPasswordMismatch}
-          sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1.1rem' }}
+          size="large"
+          disabled={!isIdAvailable || isPasswordMismatch} // 유효하지 않으면 클릭 불가
+          sx={{ 
+            mt: 4, 
+            mb: 2, 
+            py: 1.8, 
+            fontSize: '1.1rem', 
+            borderRadius: 3,
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+          }}
         >
           가입하기
         </Button>
 
-        <Button
-          fullWidth
-          variant="text"
-          onClick={() => navigate('/login')}
-        >
-          이미 계정이 있으신가요? 로그인
-        </Button>
+        {/* 로그인 링크 (디자인 통일) */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+                이미 계정이 있으신가요?
+            </Typography>
+            <Link 
+                component="button"
+                variant="body2" 
+                onClick={() => navigate('/login')}
+                sx={{ ml: 1, fontWeight: 'bold', textDecoration: 'none' }}
+            >
+                로그인
+            </Link>
+        </Box>
       </Box>
     </Box>
   );
