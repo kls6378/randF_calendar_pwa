@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage";
@@ -34,19 +34,15 @@ const PublicRoute = ({ isAuth }) => {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isAuth") === "true";
+    return !!localStorage.getItem("token"); // 토큰이 있으면 true, 없으면 false
   });
 
   // 로그인/로그아웃 함수
   const handleLogin = () => {
-    localStorage.setItem("isAuth", "true"); // 저장소에 쓰기
+    // 토큰은 이미 LoginPage에서 저장했으므로 상태만 업데이트
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuth"); // 저장소에서 지우기
-    setIsLoggedIn(false);
-  };
   return (
     <div className="App">
       <Routes>

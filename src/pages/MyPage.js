@@ -1,23 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Avatar, List, ListItem, ListItemIcon, ListItemText, Switch, Divider, Button } from '@mui/material';
+import { Box, Typography, Avatar, List, ListItem, ListItemIcon, ListItemText, Switch, Button } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useColorMode } from '../theme/ThemeContext';
 import { useTheme } from '@mui/material/styles';
+import { useConfirm } from '../contexts/ConfirmContext';
 
 function MyPage() {
+  const { showConfirm } = useConfirm();
   const navigate = useNavigate();
   const theme = useTheme();
   const { toggleColorMode } = useColorMode();
   
-  const [nickname] = useState('홍길동'); 
+  const [nickname] = useState(localStorage.getItem('nickname') || '사용자');   
+  
+  const handleLogout = async () => {
 
-  const handleLogout = () => {
-    if(window.confirm('로그아웃 하시겠습니까?')) {
+    const isConfirmed = await showConfirm(
+      '로그아웃',                          // 제목
+      `정말 로그아웃 하시겠습니까?`, // 내용
+      '로그아웃',                           // 확인 버튼 텍스트 
+      '취소'                                // 취소 버튼 텍스트 
+    );
+
+    if(isConfirmed) {
+        // 관련된 모든 정보 삭제
+        localStorage.removeItem('token');
+        localStorage.removeItem('nickname');
+        localStorage.removeItem('userId');
         localStorage.removeItem('isAuth');
-        window.location.reload();
+
+        // 페이지 새로고침 (App.js가 다시 실행되면서 로그인 화면으로 보냄)
+        window.location.reload(); 
     }
   };
 

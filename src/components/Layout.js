@@ -19,19 +19,12 @@ import {
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
-import { useColorMode } from "../theme/ThemeContext";
-import { useTheme } from "@mui/material/styles";
-import IconButton from "@mui/material/IconButton";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
 
 const drawerWidth = 240;
 
 function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
-  const { toggleColorMode } = useColorMode();
 
   const menuItems = [
     { text: "캘린더", icon: <CalendarMonthIcon />, path: "/" },
@@ -56,16 +49,6 @@ function Layout() {
     // 3. 나머지는 기본 0번(캘린더) 리턴
     return 0;
   };
-
-  const ThemeToggleButton = () => (
-    <IconButton onClick={toggleColorMode} color="inherit">
-      {theme.palette.mode === "dark" ? (
-        <Brightness7Icon />
-      ) : (
-        <Brightness4Icon />
-      )}
-    </IconButton>
-  );
 
   return (
     <Box sx={{ display: "flex", height: "100dvh" }}>

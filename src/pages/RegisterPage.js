@@ -8,8 +8,10 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'; // 닉네임 
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { motion } from 'framer-motion';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 function RegisterPage() {
+  const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -30,32 +32,45 @@ function RegisterPage() {
   const [isIdAvailable, setIsIdAvailable] = useState(false); 
   const [isChecking, setIsChecking] = useState(false); 
 
-  // ID 실시간 중복 체크
+  // ID 실시간 중복 체크 api 연동
   useEffect(() => {
     const checkId = async () => {
+      // 빈 값일 때 초기화
       if (!formData.id) {
         setIdMessage('');
         setIsIdAvailable(false);
         return;
       }
 
-      // TODO: 실제 백엔드 API 호출로 교체
-      // 예: const response = await fetch(`/api/users/check-id?id=${formData.id}`);
       setIsChecking(true); 
 
-      // (임시) 0.5초 뒤 가짜 응답
-      setTimeout(() => {
-        const mockTakenIds = ['admin', 'test', 'user'];
+      try {
+        // 1. 서버에 ID 중복 체크 요청
+        const response = await fetch(`/api/users/check-id?id=${formData.id}`);
         
-        if (mockTakenIds.includes(formData.id)) {
-          setIdMessage('이미 사용 중인 아이디입니다.');
-          setIsIdAvailable(false);
+        if (response.ok) {
+          const data = await response.json();
+          // 응답 형태: { isAvailable: true/false }
+          
+          if (data.isAvailable) {
+            setIdMessage('사용 가능한 아이디입니다.');
+            setIsIdAvailable(true);
+          } else {
+            setIdMessage('이미 사용 중인 아이디입니다.');
+            setIsIdAvailable(false);
+          }
         } else {
-          setIdMessage('사용 가능한 아이디입니다.');
-          setIsIdAvailable(true);
+          // 서버 에러 처리
+          setIdMessage('확인 중 오류가 발생했습니다.');
+          setIsIdAvailable(false);
         }
+      } catch (error) {
+        console.error("ID 체크 에러:", error);
+        setIdMessage('서버 연결 실패');
+        setIsIdAvailable(false);
+      } finally {
         setIsChecking(false);
-      }, 500);
+      }
     };
 
     // 디바운스: 0.5초 동안 입력이 없으면 체크 실행
@@ -79,30 +94,50 @@ function RegisterPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  // 회원가입 제출 (API 연동)
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.id || !formData.password || !formData.confirmPassword || !formData.nickname) {
-      alert("모든 항목을 입력해주세요.");
+      showSnackbar("모든 항목을 입력해주세요.");
       return;
     }
 
     if (!isIdAvailable) {
-      alert("아이디를 확인해주세요.");
+      showSnackbar("아이디 중복 확인이 필요합니다.");
       return;
     }
     if (isPasswordMismatch) {
-      alert("비밀번호가 일치하지 않습니다.");
+      showSnackbar("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     const { confirmPassword, ...submitData } = formData;
     console.log('회원가입 요청 데이터:', submitData);
     
-    // TODO: 백엔드 회원가입 API 호출 (POST /auth/register)
-    
-    alert('회원가입이 완료되었습니다! 로그인해주세요.');
-    navigate('/login');
+    try {
+      // 2. 서버에 회원가입 요청
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData), // { id, password, nickname }
+      });
+
+      if (response.ok) {
+        // 성공 시 (200 OK)
+        showSnackbar('회원가입이 완료되었습니다! 로그인해주세요.');
+        navigate('/login');
+      } else {
+        // 실패 시 (400 Bad Request 등)
+        const errorMsg = await response.text();
+        showSnackbar(`회원가입 실패: ${errorMsg}`);
+      }
+    } catch (error) {
+      console.error("회원가입 에러:", error);
+      showSnackbar("서버와 통신 중 오류가 발생했습니다.");
+    }
   };
 
   return (

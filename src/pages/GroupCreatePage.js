@@ -4,28 +4,61 @@ import {
   Box, TextField, Button, Typography, IconButton, Stack, FormHelperText
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useSnackbar } from "../contexts/SnackbarContext";
 
 function GroupCreatePage() {
+  const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   
   // 상태 관리 (색상 제거됨)
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // 중복 방지용 상태
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 전송할 데이터 (심플해짐)
+    if (!name.trim()) return;
+
+    setIsSubmitting(true);
+
     const newGroup = {
       name,
       description: desc,
     };
 
-    console.log('그룹 생성 요청:', newGroup);
-    // TODO: 백엔드 API 호출 (POST /groups) -> 응답으로 inviteCode 등을 받음
-    
-    alert(`'${name}' 그룹이 생성되었습니다!`);
-    navigate('/groups');
+    try {
+      const token = localStorage.getItem('token');
+      
+      // 서버에 그룹 생성 요청
+      const response = await fetch('/api/groups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newGroup)
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // { id: 123, inviteCode: 'X8Y2...' }
+        console.log('그룹 생성 성공:', data);
+        
+        // 성공 시 초대 코드 알려주기
+        showSnackbar(`${name} 그룹 생성 완료!`);
+        
+        // 목록 페이지로 이동
+        navigate('/groups');
+      } else {
+        const errorText = await response.text();
+        showSnackbar(`그룹 생성 실패: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("그룹 생성 에러:", error);
+      showSnackbar("서버 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,7 +110,7 @@ function GroupCreatePage() {
             type="submit" 
             variant="contained" 
             size="large" 
-            disabled={!name.trim()} 
+            disabled={!name.trim() || isSubmitting} 
             sx={{ height: 50, fontSize: '1.1rem', borderRadius: 2 }}
           >
             완료
