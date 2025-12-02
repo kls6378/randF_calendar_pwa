@@ -46,7 +46,6 @@ function LoginPage({ onLogin }) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("로그인 성공:", data);
 
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("nickname", data.nickname);

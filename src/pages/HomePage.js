@@ -299,7 +299,6 @@ function HomePage() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("불러온 일정:", data);
           setRawEvents(data); // 서버 데이터 저장
         } else {
           console.error("일정 불러오기 실패");

@@ -48,7 +48,6 @@ function GroupMemberPage() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("멤버 목록:", data);
           setMembers(data);
         } else {
           console.error("멤버 목록 로딩 실패");

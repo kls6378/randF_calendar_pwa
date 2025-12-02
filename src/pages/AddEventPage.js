@@ -205,7 +205,6 @@ function AddEventPage() {
       });
 
       if (response.ok) {
-        console.log(`${category} 일정 ${isEditMode ? "수정" : "저장"} 성공`);
         showSnackbar(isEditMode ? '일정이 수정되었습니다!' : '새 일정이 등록되었습니다!');
         navigate(-1); // 성공 시 뒤로가기
       } else {

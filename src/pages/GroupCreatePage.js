@@ -42,7 +42,6 @@ function GroupCreatePage() {
 
       if (response.ok) {
         const data = await response.json(); // { id: 123, inviteCode: 'X8Y2...' }
-        console.log('그룹 생성 성공:', data);
         
         // 성공 시 초대 코드 알려주기
         showSnackbar(`${name} 그룹 생성 완료!`);

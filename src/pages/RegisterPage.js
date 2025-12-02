@@ -113,7 +113,6 @@ function RegisterPage() {
     }
 
     const { confirmPassword, ...submitData } = formData;
-    console.log('회원가입 요청 데이터:', submitData);
     
     try {
       // 2. 서버에 회원가입 요청

@@ -60,7 +60,6 @@ function GroupListPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("내 그룹 목록:", data);
         setGroups(data);
       } else {
         console.error("그룹 목록 조회 실패");

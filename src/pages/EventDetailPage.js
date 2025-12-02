@@ -51,7 +51,6 @@ function EventDetailPage() {
 
         if (response.ok) {
           const latestData = await response.json();
-          console.log("일정 상세 업데이트:", latestData);
           setEvent(latestData); // 최신 데이터로 갈아끼우기
         } else {
           console.error("일정을 찾을 수 없습니다.");
