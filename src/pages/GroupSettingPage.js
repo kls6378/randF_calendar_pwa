@@ -245,6 +245,7 @@ function GroupSettingPage() {
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                InputProps={{inputProps: { maxLength: 20 }}}
               />
               <TextField
                 label="그룹 설명"

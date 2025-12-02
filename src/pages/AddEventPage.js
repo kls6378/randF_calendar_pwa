@@ -284,6 +284,7 @@ function AddEventPage() {
             fullWidth
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            InputProps={{inputProps: { maxLength: 20 }}}
           />
           <Divider />
 
@@ -295,6 +296,7 @@ function AddEventPage() {
                 value={place}
                 onChange={(e) => setPlace(e.target.value)}
                 InputProps={{
+                  inputProps: { maxLength: 50 },
                   startAdornment: (
                     <LocationOnIcon color="action" sx={{ mr: 1 }} />
                   ),
@@ -408,6 +410,7 @@ function AddEventPage() {
                 value={lectureRoom}
                 onChange={(e) => setLectureRoom(e.target.value)}
                 InputProps={{
+                  inputProps: { maxLength: 20 },
                   startAdornment: <ClassIcon color="action" sx={{ mr: 1 }} />,
                 }}
               />

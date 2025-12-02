@@ -318,6 +318,7 @@ function GroupListPage() {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             placeholder="예: A4SJ65"
+            InputProps={{inputProps: { maxLength: 6 }}}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>

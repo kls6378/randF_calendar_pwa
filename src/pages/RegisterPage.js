@@ -200,6 +200,7 @@ function RegisterPage() {
           }
           // 아이콘 추가
           InputProps={{
+            inputProps: { maxLength: 20 },
             startAdornment: (
               <InputAdornment position="start">
                 <PersonOutlineIcon color="action" />
@@ -268,6 +269,7 @@ function RegisterPage() {
           value={formData.nickname}
           onChange={handleChange}
           InputProps={{
+            inputProps: { maxLength: 20 },
             startAdornment: (
               <InputAdornment position="start">
                 <BadgeOutlinedIcon color="action" />

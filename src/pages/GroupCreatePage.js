@@ -83,9 +83,10 @@ function GroupCreatePage() {
               fullWidth
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 캡스톤 디자인 3조"
+              placeholder="예: 캡스톤 디자인"
               autoFocus
-              helperText={`${name.length}/20자`} // 글자수 힌트 정도는 있으면 좋음
+              helperText={`${name.length}/50자`} // 글자수 힌트 정도는 있으면 좋음
+              InputProps={{inputProps: { maxLength: 20 }}}
             />
           </Box>
 

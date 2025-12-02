@@ -81,6 +81,7 @@ function MyProfileEditPage() {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             helperText="다른 사용자에게 보여질 이름입니다."
+            InputProps={{inputProps: { maxLength: 20 }}}
           />
 
           <Button 

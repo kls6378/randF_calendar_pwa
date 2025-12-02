@@ -116,6 +116,7 @@ function LoginPage({ onLogin }) {
           onChange={handleChange}
           error={!!errorMsg} // 에러 시 테두리 빨갛게
           InputProps={{
+            inputProps: { maxLength: 20 },
             startAdornment: (
               <InputAdornment position="start">
                 <PersonOutlineIcon color={errorMsg ? "error" : "action"} />
