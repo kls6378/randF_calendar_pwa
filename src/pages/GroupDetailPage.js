@@ -13,6 +13,7 @@ import {
   Fab,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -21,6 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import dayjs from "dayjs";
 
 function GroupDetailPage() {
@@ -33,6 +35,8 @@ function GroupDetailPage() {
   // 그룹 정보와 일정을 State로 관리
   const [group, setGroup] = useState(location.state?.group || null);
   const [groupEvents, setGroupEvents] = useState([]);
+
+  const [error, setError] = useState(false);
 
   // 데이터 불러오기 (그룹 정보 & 일정)
   useEffect(() => {
@@ -49,34 +53,86 @@ function GroupDetailPage() {
         if (groupRes.ok) {
           const groupData = await groupRes.json();
           setGroup(groupData);
+
+          // (그룹 정보를 성공적으로 가져왔을 때만 일정 가져오기 시도)
+          const scheduleRes = await fetch("/api/schedules", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (scheduleRes.ok) {
+            const allSchedules = await scheduleRes.json();
+            const myGroupSchedules = allSchedules.filter(
+              (s) => s.category === "group" && s.groupId === parseInt(id)
+            );
+            setGroupEvents(myGroupSchedules);
+          }
         } else {
-          console.error("그룹 정보 로딩 실패");
-        }
-
-        // 2. 전체 일정 가져와서 '이 그룹의 일정'만 필터링
-        const scheduleRes = await fetch("/api/schedules", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (scheduleRes.ok) {
-          const allSchedules = await scheduleRes.json();
-          // category가 'group'이고, groupId가 현재 페이지의 id와 같은 것만 필터링
-          const myGroupSchedules = allSchedules.filter(
-            (s) => s.category === "group" && s.groupId === parseInt(id)
-          );
-          setGroupEvents(myGroupSchedules);
+          // 실패 시 (403 Forbidden 등) 에러 상태 설정
+          console.error("그룹 접근 권한 없음");
+          setError(true);
         }
       } catch (error) {
         console.error("데이터 로딩 중 에러:", error);
+        setError(true);
       }
     };
 
     fetchGroupData();
   }, [id]);
 
-  // 로딩 중이거나 데이터가 없을 때 처리
+  // 에러 발생 시 5초 뒤 자동 리다이렉트
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        navigate("/groups", { replace: true }); // 뒤로가기 방지(replace)
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, navigate]);
+
+  // 에러 화면 처리 (가장 먼저 체크)
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "80vh",
+          color: "text.secondary",
+        }}
+      >
+        <ErrorOutlineIcon
+          sx={{ fontSize: 60, mb: 2, color: "error.main", opacity: 0.8 }}
+        />
+        <Typography variant="h6" fontWeight="bold">
+          접근 권한이 없습니다.
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          그룹원이 아니거나 존재하지 않는 그룹입니다.
+        </Typography>
+        <Typography variant="caption" sx={{ mt: 3, opacity: 0.6 }}>
+          잠시 후 목록으로 이동합니다...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // 로딩 화면
   if (!group) {
-    return <Box p={3}>로딩 중...</Box>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   const isLeader = group.role === "leader";

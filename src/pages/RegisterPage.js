@@ -56,7 +56,7 @@ function RegisterPage() {
             setIdMessage('사용 가능한 아이디입니다.');
             setIsIdAvailable(true);
           } else {
-            setIdMessage('이미 사용 중인 아이디입니다.');
+            setIdMessage(data.message || '이미 사용 중인 아이디입니다.');
             setIsIdAvailable(false);
           }
         } else {
