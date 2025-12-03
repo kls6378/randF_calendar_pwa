@@ -51,6 +51,23 @@ function AddEventPage() {
 
   const groupContext = location.state?.groupContext;
 
+  // 현재 날짜에 따라 개강일 설정
+  const getInitialSemesterStart = () => {
+    const now = dayjs();
+    const currentMonth = now.month(); // 0(1월) ~ 11(12월)
+
+    // 1월(0) ~ 6월(5) -> 같은 해 3월 1일
+    if (currentMonth < 6) {
+      return now.month(2).date(1); // month(2)는 3월
+    } 
+    // 7월(6) ~ 12월(11) -> 같은 해 9월 1일
+    else {
+      return now.month(8).date(1); // month(8)은 9월
+    }
+  };
+
+  const initialSemesterDate = getInitialSemesterStart();
+
   // 상태 관리
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("personal");
@@ -60,28 +77,49 @@ function AddEventPage() {
   // [개인/그룹] 전용 상태
   const [place, setPlace] = useState("");
   const [allDay, setAllDay] = useState(false);
-  const [start, setStart] = useState(dayjs());
-  const [end, setEnd] = useState(dayjs().add(1, "hour"));
+  const [start, setStart] = useState(dayjs().hour(9).minute(0));
+  const [end, setEnd] = useState(dayjs().hour(10).minute(0));
 
   // [강의] 전용 상태
   const [lectureRoom, setLectureRoom] = useState("");
-  const [semesterStart, setSemesterStart] = useState(dayjs());
-  const [semesterEnd, setSemesterEnd] = useState(dayjs().add(4, "month"));
+  const [semesterStart, setSemesterStart] = useState(initialSemesterDate);
+  const [semesterEnd, setSemesterEnd] = useState(initialSemesterDate.add(16, "week").subtract(1,"day"));
   const [lectureStartTime, setLectureStartTime] = useState(
     dayjs().hour(9).minute(0)
   );
   const [lectureEndTime, setLectureEndTime] = useState(
-    dayjs().hour(10).minute(30)
+    dayjs().hour(10).minute(0)
   );
   const [selectedDays, setSelectedDays] = useState([]);
 
   const handleDayChange = (event, newDays) => {
     setSelectedDays(newDays);
   };
-  const handleSemesterStartChange = (newValue) => {
-    setSemesterStart(newValue);
-    if (newValue && selectedDays.length === 0)
-      setSelectedDays([newValue.day()]);
+  const handleSemesterStartChange = (newValue) => { 
+    setSemesterStart(newValue); 
+    if (newValue) {
+        // 개강일로부터 16주 뒤를 종강일로 자동 설정 (하루 뺌 = 16주차 수업일까지)
+        setSemesterEnd(newValue.add(16, 'week').subtract(1, 'day'));
+        
+        // 아직 요일 선택 안 했으면 해당 요일 자동 선택
+        if (selectedDays.length === 0) setSelectedDays([newValue.day()]); 
+    }
+  };
+
+  // 시작시간 변경 시 종료시간은 (시작시간+1)
+  const handleStartTimeChange = (newTime) => {
+    setStart(newTime);
+    if (newTime) {
+        setEnd(newTime.add(1, 'hour'));
+    }
+  };
+
+  //강의 시간도
+  const handleLectureStartTimeChange = (newTime) => {
+    setLectureStartTime(newTime);
+    if (newTime) {
+        setLectureEndTime(newTime.add(1, 'hour'));
+    }
   };
 
   // 초기화 로직 순서 변경
@@ -124,7 +162,6 @@ function AddEventPage() {
       const initDate = dayjs(location.state.selectedDate);
       setStart(initDate.hour(9).minute(0));
       setEnd(initDate.hour(10).minute(0));
-      setSemesterStart(initDate);
       setSelectedDays([initDate.day()]);
     }
   }, [location.state, isEditMode, eventToEdit, groupContext]);
@@ -278,7 +315,7 @@ function AddEventPage() {
           )}
 
           <TextField
-            label="일정 제목"
+            label={category === 'lecture' ? "강의명" : "일정 제목"}
             required
             fullWidth
             value={title}
@@ -329,7 +366,7 @@ function AddEventPage() {
                     <TimePicker
                       label="시간"
                       value={start}
-                      onChange={(newValue) => setStart(newValue)}
+                      onChange={handleStartTimeChange}
                       format="A hh:mm"
                       slotProps={{ textField: { fullWidth: true } }}
                     />
@@ -437,7 +474,7 @@ function AddEventPage() {
                   <TimePicker
                     label="수업 시작 시간"
                     value={lectureStartTime}
-                    onChange={(newValue) => setLectureStartTime(newValue)}
+                    onChange={handleLectureStartTimeChange}
                     format="A hh:mm"
                     slotProps={{ textField: { fullWidth: true } }}
                   />
