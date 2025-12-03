@@ -123,14 +123,16 @@ function EventDetailPage() {
   const categoryInfo = getCategoryLabel(event.category);
 
   const getFormattedDate = () => {
-    if (event.category === "lecture") {
-      const start = dayjs(event.startRecur || event.start).format("YYYY.MM.DD");
-      const end = dayjs(event.endRecur || event.end).format("YYYY.MM.DD");
-      const time = `${event.startTime?.slice(0, 5)} ~ ${event.endTime?.slice(
-        0,
-        5
-      )}`;
-      return `${start} ~ ${end} (매주 ${time})`;
+    // 강의 (매주 월, 수 11:00 ~ 13:00 형식)
+    if (event.category === 'lecture') {
+        const time = `${event.startTime?.slice(0,5)} ~ ${event.endTime?.slice(0,5)}`;
+        
+        const daysMap = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayStr = Array.isArray(event.daysOfWeek) 
+            ? event.daysOfWeek.map(d => daysMap[d]).join(', ') 
+            : '';
+
+        return `매주 ${dayStr}요일 ${time}`;
     }
     const startObj = dayjs(event.start || event.date);
     const endObj = dayjs(event.end || event.date);

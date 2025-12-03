@@ -319,8 +319,8 @@ function HomePage() {
       // 1. 종료일이 존재하고
       // 2. '하루 종일(allDay)' 설정이 되어 있거나 OR 날짜 문자열에 시간('T')이 없는 경우
       // -> 종료일에 하루를 더해줘야 달력에 정상적으로 보임
-      if (event.end && (event.allDay || !event.end.includes("T"))) {
-        adjustedEnd = dayjs(event.end).add(1, "day").format("YYYY-MM-DD");
+      if (event.end && (event.allDay || event.end.length <= 10)) {
+        adjustedEnd = dayjs(event.end).add(1, 'day').format('YYYY-MM-DD');
       }
 
       // 색상 처리 로직
@@ -395,16 +395,27 @@ function HomePage() {
   };
 
   const getEventTimeText = (event) => {
-    if (event.allDay) return "종일";
-    if (event.startTime)
-      return `${event.startTime.slice(0, 5)} ~ ${
-        event.endTime ? event.endTime.slice(0, 5) : ""
-      }`;
-    if (event.date)
-      return event.date.includes("T")
-        ? event.date.split("T")[1].slice(0, 5)
-        : "종일";
-    return "시간 미정";
+     // 하루 종일인 경우
+     if (event.allDay) return '종일';
+
+     // 일반/그룹 일정 (start/end가 DateTime 형식일 때)
+     if (event.start && event.end && !event.startTime) {
+        const s = dayjs(event.start).format('HH:mm');
+        const e = dayjs(event.end).format('HH:mm');
+        return `${s} ~ ${e}`; // 오전 9:00 ~ 오전 10:00
+     }
+
+     // 강의 일정 (startTime/endTime 필드가 따로 있는 경우)
+     if (event.startTime) {
+        return `${event.startTime.slice(0,5)} ~ ${event.endTime ? event.endTime.slice(0,5) : ''}`;
+     }
+     
+     // 날짜만 있는 경우
+     if (event.date) {
+        return event.date.includes('T') ? event.date.split('T')[1].slice(0, 5) : '종일';
+     }
+
+     return '시간 미정';
   };
 
   const renderSlotLabel = (arg) => {
